@@ -1,0 +1,70 @@
+#!/bin/bash
+
+if [ ! -d $PUNCHCLOCK_HOME ]; then
+    echo "Incorrect install: Environment variable: PUNCHCLOCK_HOME: $PUNCHCLOCK_HOME, is not a directory."
+    exit 1
+fi
+
+LOG_FILE=$PUNCHCLOCK_HOME/hour_log.txt
+SCRIPT_NAME=$(basename $0)
+CASE_TYPES=(casetype1 casetype2 casetype3 casetype4)
+
+usage () {
+    echo "Usage: $SCRIPT_NAME ($(echo ${CASE_TYPES[*]}|tr ' ' '|')) NUMBER"
+}
+
+isValidCase () {
+for CASE_TYPE in ${CASE_TYPES[*]}
+do
+    if [ $CASE_TYPE = $1 ]; then
+	echo "true"
+	return 0
+    fi
+done	
+echo "false"
+}
+
+CASE=$1
+CASE_NUMBER=$2
+
+if [ -z $CASE ]; then
+    usage
+    exit 1
+fi
+
+ 
+RET=$(isValidCase $CASE)
+
+if  [ $RET = "false" ]; then
+    if ! [ $CASE = "stop" ]; then	
+	usage
+	exit 1
+    fi
+elif [ -z $CASE_NUMBER ] || ! [[ $CASE_NUMBER =~ ^[1-9][0-9]*$ ]]; then
+    usage
+    exit 1
+fi
+
+if [ -f $LOG_FILE ]; then
+    echo $(tail -n1 $LOG_FILE | cut -f1)
+    RET=$(isValidCase $(tail -n1 $LOG_FILE | cut -d'-' -f1) )
+    echo $RET
+    if [ $RET = "true" ] && [ -z "$(tail -n1 $LOG_FILE | cut -f3)" ]; then
+	echo -e "\t""$(date '+%Y-%m-%d %H-%M-%S')" >> $LOG_FILE
+	if ! [ $CASE = "stop" ]; then
+	    echo -ne "$CASE-$CASE_NUMBER""\t""$(date '+%Y-%m-%d %H-%M-%S')" >> $LOG_FILE	    
+	fi
+    elif [ $RET = "true" ] && ! [ -z "$(tail -n1 $LOG_FILE | cut -f3)" ]; then
+	if ! [ $CASE = "stop" ];	then
+	    echo -ne "$CASE-$CASE_NUMBER""\t""$(date '+%Y-%m-%d %H-%M-%S')" >> $LOG_FILE
+	fi
+    fi
+else
+    touch $LOG_FILE
+    echo -e "case\tstart-time\tend-time" >> $LOG_FILE
+    echo -ne "$CASE-$CASE_NUMBER""\t""$(date '+%Y-%m-%d %H-%M-%S')" >> $LOG_FILE
+fi
+echo
+echo "##### FiLE BEGINS ####"
+tail $LOG_FILE
+echo
