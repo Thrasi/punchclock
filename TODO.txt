@@ -1,0 +1,4 @@
+* Simplification of installation and configuration to user specific case names.
+* Installation instructions.
+* Develop summarize further. Summarize certain periods, default configurable
+* Divide the hours file into separate files, byt month or day or week etc.
