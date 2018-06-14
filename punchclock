@@ -5,7 +5,8 @@ if [ ! -d $PUNCHCLOCK_HOME ]; then
     exit 1
 fi
 
-LOG_FILE=$PUNCHCLOCK_HOME/hour_log.txt
+LOG_FILE_NAME=$(date '+%Y-%m').txt
+LOG_FILE=$PUNCHCLOCK_HOME/logs/$LOG_FILE_NAME
 SCRIPT_NAME=$(basename $0)
 CASE_TYPES=(casetype1 casetype2 casetype3 casetype4)
 
